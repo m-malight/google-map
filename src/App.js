@@ -1,25 +1,49 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useCallback } from "react";
+import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
+
+const center = {
+  lat: -3.745,
+  lng: -38.523,
+};
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    libraries: ["maps", "places"],
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_API_KEY,
+  });
+
+  const [map, setMap] = React.useState(null);
+
+  const onLoad = useCallback(function callback(map) {
+    const bounds = new window.google.maps.LatLngBounds(center);
+    map.fitBounds(bounds);
+    setMap(map);
+  }, []);
+
+  const onUnmount = React.useCallback(function callback(map) {
+    setMap(null);
+  }, []);
+
+  return isLoaded ? (
+    <>
+      <div className="absolute z-[99] shadow-md shadow-black right-0">
+        <h2>Hello</h2>
+      </div>
+      <GoogleMap
+        mapContainerClassName="h-screen w-screen"
+        center={center}
+        zoom={10}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
+      >
+        {/* Child components, such as markers, info windows, etc. */}
+        <></>
+      </GoogleMap>
+    </>
+  ) : (
+    <></>
   );
 }
 
-export default App;
+export default React.memo(App);
