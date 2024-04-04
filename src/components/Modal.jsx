@@ -19,7 +19,15 @@ export default function Modal({
   }, [visible, initialState]);
 
   const childrenWithProp = React.Children.map(children, (child) =>
-    React.cloneElement(child, { submitting, state })
+    React.cloneElement(child, {
+      submitting,
+      state,
+      close: async () => {
+        await onClose(state, false);
+        setState({ ...initialState });
+        setClose(!close);
+      },
+    })
   );
 
   function handleOnChange(e) {
@@ -42,7 +50,7 @@ export default function Modal({
 
         // Validate user input
         await yupValidator.validate(state);
-        await onClose(state);
+        await onClose(state, true);
         setState({ ...initialState });
         setSubmitting(false);
         setClose(!close);
@@ -60,6 +68,7 @@ export default function Modal({
 
       errors.forEach((error) => (error.style.display = "none"));
       fields.forEach((field) => field.classList.remove("form-field"));
+      await onClose(state, false);
       setState({ ...initialState });
       setClose(!close);
     }

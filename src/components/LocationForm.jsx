@@ -11,7 +11,7 @@ export default function LocationForm({ submitting, state }) {
           <p className="font-semibold text-xm">Location:</p>
           <input
             type="text"
-            value={state.name}
+            defaultValue={state.name}
             name="name"
             className="w-full p-2 outline-none"
           />
@@ -26,7 +26,7 @@ export default function LocationForm({ submitting, state }) {
           <p className="font-semibold text-xm">Lattitude:</p>
           <input
             type="text"
-            value={state.lat}
+            defaultValue={state.lat}
             name="lat"
             className="w-full p-2 outline-none"
           />
@@ -41,7 +41,7 @@ export default function LocationForm({ submitting, state }) {
           <p className="font-semibold text-xm">Longitude:</p>
           <input
             type="text"
-            value={state.lng}
+            defaultValue={state.lng}
             name="lng"
             className="w-full p-2 outline-none"
           />

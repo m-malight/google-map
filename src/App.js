@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from "react";
-import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import * as Yup from "yup";
 import { FaLocationDot } from "react-icons/fa6";
 import Modal from "./components/Modal";
 import LocationForm from "./components/LocationForm";
+import ListOfPlaces from "./components/ListOfPlaces";
 
 function App() {
   const { isLoaded } = useJsApiLoader({
@@ -13,7 +14,8 @@ function App() {
   });
 
   const [map, setMap] = useState(null);
-  const [add, setAdd] = useState(false);
+  const [addPlace, setAddPlace] = useState(false);
+  const [showPlaces, setShowPlaces] = useState(false);
   const [center, setCenter] = useState({
     lat: -3.745,
     lng: -38.523,
@@ -40,13 +42,13 @@ function App() {
     },
     [center]
   );
-
+  //Get location name
   const service = useCallback(
     function callback(req, location) {
       const service = new window.google.maps.places.PlacesService(map);
       service.getDetails(req, (place, _) => {
         setInitialState({ name: place.name, ...location });
-        setAdd(true);
+        setAddPlace(true);
       });
     },
     [map]
@@ -60,7 +62,7 @@ function App() {
     <>
       <div
         className="absolute z-[99] shadow-md shadow-black right-[1.5vh] top-[9vh] bg-white"
-        onClick={() => console.log("Someone clicked")}
+        onClick={() => setShowPlaces(true)}
       >
         <FaLocationDot className="w-[3.5vh] h-[3.5vh] m-2" />
       </div>
@@ -76,25 +78,48 @@ function App() {
             service(req, e.latLng.toJSON());
           } else {
             setInitialState({ name: "", ...e.latLng.toJSON() });
-            setAdd(true);
+            setAddPlace(true);
           }
         }}
         center={center}
-        zoom={10}
+        zoom={20}
         onLoad={onLoad}
         onUnmount={onUnmount}
-      />
+      >
+        <Marker position={center} />
+      </GoogleMap>
       <Modal
-        visible={add}
+        visible={addPlace}
         initialState={initialState}
         classNames="h-[50vh] md:h-[55vh]"
         yupValidator={yupValidator}
-        onClose={(state) => {
-          setAdd(false);
-          console.log(state);
+        onClose={(state, successful) => {
+          setAddPlace(false);
+          if (successful) {
+            const placesExist = localStorage.getItem("places");
+            if (placesExist) {
+              const parsePlaces = JSON.parse(placesExist);
+              if (!parsePlaces.find((place) => place.name === state.name)) {
+                parsePlaces.push(state);
+                const stringifyPlaces = JSON.stringify(parsePlaces);
+                localStorage.setItem("places", stringifyPlaces);
+              }
+            } else {
+              const places = [state];
+              const stringifyPlaces = JSON.stringify(places);
+              localStorage.setItem("places", stringifyPlaces);
+            }
+          }
         }}
       >
         <LocationForm />
+      </Modal>
+      <Modal
+        visible={showPlaces}
+        initialState={{}}
+        onClose={() => setShowPlaces(false)}
+      >
+        <ListOfPlaces setCenter={(center) => setCenter(center)} />
       </Modal>
     </>
   ) : (
