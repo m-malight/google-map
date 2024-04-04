@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
 
 export default function Modal({
@@ -9,8 +9,18 @@ export default function Modal({
   yupValidator,
   classNames,
 }) {
-  const [close, setClose] = useState(!visible);
+  const [close, setClose] = useState(true);
   const [state, setState] = useState({ ...initialState });
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setClose(!visible);
+    setState({ ...initialState });
+  }, [visible, initialState]);
+
+  const childrenWithProp = React.Children.map(children, (child) =>
+    React.cloneElement(child, { submitting, state })
+  );
 
   function handleOnChange(e) {
     const { name, value } = e.target;
@@ -20,6 +30,7 @@ export default function Modal({
 
   async function forceClose(validate) {
     if (validate) {
+      setSubmitting(true);
       validate.preventDefault();
       try {
         // Make all error mesage invisible
@@ -31,10 +42,12 @@ export default function Modal({
 
         // Validate user input
         await yupValidator.validate(state);
-        onClose(state);
+        await onClose(state);
         setState({ ...initialState });
+        setSubmitting(false);
         setClose(!close);
       } catch (e) {
+        setSubmitting(false);
         const elem = document.getElementById(`${e.path}@error`);
         const field = document.querySelector(`[name="${e.path}"]`);
         field.classList.add("form-field");
@@ -42,7 +55,11 @@ export default function Modal({
         elem.style.display = "block";
       }
     } else {
-      onClose(state);
+      const errors = document.querySelectorAll(".form-error");
+      const fields = document.querySelectorAll(".form-field");
+
+      errors.forEach((error) => (error.style.display = "none"));
+      fields.forEach((field) => field.classList.remove("form-field"));
       setState({ ...initialState });
       setClose(!close);
     }
@@ -65,7 +82,7 @@ export default function Modal({
           className={`relative w-screen h-[75vh] top-9 py-1 px-2 overflow-hidden bg-white border-2 border-gray-300 my-6 md:rounded-lg md:w-[70vw] md:my-0 ${classNames}`}
         >
           <form className="h-[inherit] w-[inherit]" onSubmit={forceClose}>
-            {children}
+            {childrenWithProp}
           </form>
         </div>
       </div>
