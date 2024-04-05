@@ -8,7 +8,6 @@ export default function ListOfPlaces({ setCenter, close }) {
   useEffect(() => {
     if (getPlaces) {
       const parsePlaces = JSON.parse(getPlaces);
-      console.log(parsePlaces);
       setPlaces(parsePlaces);
     }
   }, [setCenter, getPlaces]);

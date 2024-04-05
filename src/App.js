@@ -6,12 +6,14 @@ import Modal from "./components/Modal";
 import LocationForm from "./components/LocationForm";
 import ListOfPlaces from "./components/ListOfPlaces";
 
+const loaderInfo = {
+  id: "google-map-script",
+  libraries: ["maps", "places"],
+  googleMapsApiKey: process.env.REACT_APP_GOOGLE_API_KEY,
+};
+
 function App() {
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    libraries: ["maps", "places"],
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_API_KEY,
-  });
+  const { isLoaded } = useJsApiLoader(loaderInfo);
 
   const [map, setMap] = useState(null);
   const [addPlace, setAddPlace] = useState(false);
@@ -38,7 +40,7 @@ function App() {
     function callback(map) {
       const bounds = new window.google.maps.LatLngBounds(center);
       map.fitBounds(bounds);
-      setMap(map);
+      setTimeout(() => setMap(map), 100);
     },
     [center]
   );
